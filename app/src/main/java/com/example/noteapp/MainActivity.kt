@@ -1,4 +1,10 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
+// ----------------------------------------------------------------------------------------
+/* The @file:OptIn annotation allows the entire file to use experimental Material 3 APIs
+* without needing to annotate each usage individually.
+* The imports bring in essential Compose UI components, navigation, Material Design icons,
+* and standard Android/Java utilities. */
+// ----------------------------------------------------------------------------------------
 package com.example.noteappv01
 
 import android.os.Bundle
@@ -28,7 +34,11 @@ import com.example.noteapp.ui.theme.NoteAppTheme
 import java.text.SimpleDateFormat
 import java.util.*
 
-// Data model
+// ----------------------------------------------------------------------------------------
+/* This defines the core data structure for notes. Each note has a unique UUID,
+* editable title/content, and timestamps for creation and updates.
+* Using var for title/content allows modification while keeping ID and creation time immutable.*/
+// ----------------------------------------------------------------------------------------
 data class Note(
     val id: String = UUID.randomUUID().toString(),
     var title: String,
@@ -37,7 +47,11 @@ data class Note(
     var updatedAt: Long = System.currentTimeMillis()
 )
 
-// Navigation screens
+// ----------------------------------------------------------------------------------------
+/* This sealed class defines the three main screens using type-safe navigation routes.
+* The createRoute() functions help build parameterized routes,
+* and NEW_NOTE_ID constant distinguishes between editing existing notes and creating new ones.*/
+// ----------------------------------------------------------------------------------------
 sealed class Screen(val route: String) {
     object NotesList : Screen("notesList")
     object NoteDetail : Screen("noteDetail/{noteId}") {
@@ -49,7 +63,10 @@ sealed class Screen(val route: String) {
     }
 }
 
-// Main activity
+// ----------------------------------------------------------------------------------------
+/* Standard Android activity setup that enables edge-to-edge display
+* and sets the Compose content with the app's theme.*/
+// ----------------------------------------------------------------------------------------
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +79,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Root app composable with navigation and state
+// ----------------------------------------------------------------------------------------
+/* This is the app's main orchestrator. It manages the navigation controller and
+* the master list of notes in memory. Each route is defined with
+* its corresponding screen composable and navigation logic.
+* Note that data persistence isn't implemented - notes are lost when the app closes.*/
+// ----------------------------------------------------------------------------------------
 @Composable
 fun NotesApp() {
     val navController = rememberNavController()
@@ -110,8 +132,14 @@ fun NotesApp() {
     }
 }
 
+// ----------------------------------------------------------------------------------------
+/* The main screen displays all notes in a scrollable list.
+* It uses a Scaffold with a top app bar and floating action button.
+* When no notes exist, it shows an empty state message.
+* The LazyColumn efficiently renders the list of note items,
+* with each item using a unique key for proper recomposition.*/
+// ----------------------------------------------------------------------------------------
 // Notes list screen
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotesListScreen(
     notes: List<Note>,
@@ -156,6 +184,11 @@ fun NotesListScreen(
     }
 }
 
+// ----------------------------------------------------------------------------------------
+/* Individual note display component that shows the title,
+* truncated content preview (first 100 characters), and last update time.
+* The delete button is positioned in the top-right corner with error-colored styling. */
+// ----------------------------------------------------------------------------------------
 // Single note item card
 @Composable
 fun NoteItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
@@ -191,7 +224,11 @@ fun NoteItem(note: Note, onClick: () -> Unit, onDelete: () -> Unit) {
     }
 }
 
-// Note detail screen
+// ----------------------------------------------------------------------------------------
+/* Read-only view of a complete note with full content display.
+* The top bar includes back navigation and an edit button.
+* The bottom shows detailed timestamp information for both creation and last update times. */
+// ----------------------------------------------------------------------------------------
 @Composable
 fun NoteDetailScreen(note: Note, onBack: () -> Unit, onEdit: () -> Unit) {
     Scaffold(
@@ -230,7 +267,13 @@ fun NoteDetailScreen(note: Note, onBack: () -> Unit, onEdit: () -> Unit) {
     }
 }
 
-// Note edit/create screen
+// ----------------------------------------------------------------------------------------
+/* This handles both note creation and editing. It includes:
+* Form State Management: Uses TextFieldValue to maintain cursor position and selection
+* Validation Logic: Enforces title length (3-50 chars) and content length (max 500 chars)
+* Dynamic UI: Title changes based on create/edit mode
+* Real-time Feedback: Shows character count and validation errors */
+// ----------------------------------------------------------------------------------------
 @Composable
 fun NoteEditScreen(note: Note?, onSave: (String, String) -> Unit, onBack: () -> Unit) {
     var title by remember { mutableStateOf(TextFieldValue(note?.title ?: "")) }
@@ -301,49 +344,3 @@ fun NoteEditScreen(note: Note?, onSave: (String, String) -> Unit, onBack: () -> 
     }
 }
 
-// Previews
-@Preview(showBackground = true)
-@Composable
-fun NotesListPreview() {
-    NoteAppTheme {
-        NotesListScreen(
-            notes = listOf(
-                Note(title = "Shopping List", content = "Milk, Eggs, Bread"),
-                Note(title = "Meeting Notes", content = "Project timeline and tasks"),
-                Note(title = "Ideas", content = "New app feature ideas")
-            ),
-            onNoteClick = {},
-            onAddNote = {},
-            onDeleteNote = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NoteDetailPreview() {
-    NoteAppTheme {
-        NoteDetailScreen(
-            note = Note(
-                title = "Shopping List",
-                content = "Milk\nEggs\nBread",
-                createdAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis()
-            ),
-            onBack = {},
-            onEdit = {}
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NoteEditPreview() {
-    NoteAppTheme {
-        NoteEditScreen(
-            note = null,
-            onSave = { _, _ -> },
-            onBack = {}
-        )
-    }
-}
